@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ONLINE LEARNING PLATFORM
 
-## Getting Started
+## STACK
 
-First, run the development server:
+- Next.js
+- SQLite
+
+## SCENARIOS
+
+### AUTH SCENARIOS - SIGNUP / LOGIN
+
+#### 1. CREATE DB
+
+##### 1. CREATE SQLITE DB
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+sqlite3 olp.db
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+##### 2. CREATE USER TABLE
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sql
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    role TEXT CHECK(role IN ('instructor', 'student', 'admin')) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+##### 3. VERIFY TABLE
 
-## Learn More
+```bash
+.tables
+```
 
-To learn more about Next.js, take a look at the following resources:
+##### 4. INSERT SEED DATA
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```sql
+INSERT INTO users (email, password, role) VALUES ('admin@olp.com', 'test1234', 'admin');
+INSERT INTO users (email, password, role) VALUES ('instructor@olp.com', 'test1234', 'instructor');
+INSERT INTO users (email, password, role) VALUES ('student@olp.com', 'test1234', 'student');
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+##### 5. EXIT SQLITE
 
-## Deploy on Vercel
+```bash
+.exit
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+##### 6. OPEN DATABASE (OPTIONAL)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+sqlite3 olp.db
+```
+
+#### 2. INITIALIZE NEXT.JS
+
+We will assume you have node installed.
+
+##### 1. CREATE NEXT.JS PROJECT
