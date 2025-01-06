@@ -1,32 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-
 import ProtectedRoute from "../../components/ProtectedRoute";
+import { useSession } from "../../context/SessionContext";
 
 export default function DashboardPage() {
-    const [user, setUser] = useState<{ email: string; role: string } | null>(
-        null
-    );
-    const router = useRouter();
+    const { user } = useSession();
 
-    useEffect(() => {
-        // Check if user data is stored in localStorage
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        } else {
-            // Redirect to login if no session exists
-            router.push("/auth/login");
-        }
-    }, [router]);
-
-    if (!user) return null; // Show nothing while checking session
+    // Show a loading state while user is being fetched
+    if (!user) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-dracula-background text-dracula-foreground">
+                <p className="text-lg text-dracula-comment">Loading...</p>
+            </div>
+        );
+    }
 
     return (
         <ProtectedRoute>
-            <div className="flex flex-grow flex-col items-center justify-center bg-dracula-background text-dracula-foreground">
+            <div className="flex flex-col items-center justify-center w-full h-full bg-dracula-background text-dracula-foreground">
                 <h1 className="text-4xl font-bold mb-4 text-dracula-purple">
                     Welcome to Your Dashboard
                 </h1>
@@ -35,7 +26,6 @@ export default function DashboardPage() {
                     <strong className="text-dracula-yellow">{user.role}</strong>
                     .
                 </p>
-                {/* Role-Specific Content */}
                 <div className="p-6 bg-dracula-currentLine rounded shadow-md">
                     {user.role === "admin" && (
                         <p className="text-dracula-green">Admin Panel</p>

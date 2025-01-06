@@ -23,9 +23,9 @@ export default function LoginPage() {
         });
 
         if (res.ok) {
-            const { user } = await res.json();
-            localStorage.setItem("user", JSON.stringify(user));
-            login(); // Update the context state
+            const { user } = await res.json(); // Extract only the user field
+            localStorage.setItem("user", JSON.stringify(user)); // Store only the user object
+            login(user); // Immediately update the session context with user data
             router.push("/dashboard");
         } else {
             alert("Login failed! Please check your credentials.");

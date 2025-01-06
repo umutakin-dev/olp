@@ -2,9 +2,15 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 
+interface User {
+    email: string;
+    role: string;
+}
+
 interface SessionContextType {
     isLoggedIn: boolean;
-    login: () => void;
+    user: User | null;
+    login: (user: User) => void;
     logout: () => void;
 }
 
@@ -16,24 +22,30 @@ export const SessionProvider = ({
     children: React.ReactNode;
 }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
-        // Check if user is logged in on initial load
-        const user = localStorage.getItem("user");
-        setIsLoggedIn(!!user);
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+            setIsLoggedIn(true);
+            setUser(JSON.parse(storedUser)); // Directly parse the user object
+        }
     }, []);
 
-    const login = () => {
+    const login = (user: User) => {
         setIsLoggedIn(true);
+        setUser(user);
+        localStorage.setItem("user", JSON.stringify(user));
     };
 
     const logout = () => {
-        localStorage.removeItem("user");
         setIsLoggedIn(false);
+        setUser(null);
+        localStorage.removeItem("user");
     };
 
     return (
-        <SessionContext.Provider value={{ isLoggedIn, login, logout }}>
+        <SessionContext.Provider value={{ isLoggedIn, user, login, logout }}>
             {children}
         </SessionContext.Provider>
     );
