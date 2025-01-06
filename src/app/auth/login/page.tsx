@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "../../../context/SessionContext";
 
 export default function LoginPage() {
     const [formData, setFormData] = useState({ email: "", password: "" });
     const router = useRouter();
+    const { login } = useSession();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -22,21 +24,23 @@ export default function LoginPage() {
 
         if (res.ok) {
             const { user } = await res.json();
-            router.push(`/dashboard?role=${user.role}`);
+            localStorage.setItem("user", JSON.stringify(user));
+            login(); // Update the context state
+            router.push("/dashboard");
         } else {
-            alert("Login failed! Please check your email and password.");
+            alert("Login failed! Please check your credentials.");
         }
     };
 
     return (
-        <div className="flex items-center justify-center w-full h-full">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-dracula-background text-dracula-foreground">
+            <h1 className="text-4xl font-bold mb-6 text-dracula-purple">
+                Log In
+            </h1>
             <form
                 className="w-80 p-6 bg-dracula-currentLine rounded shadow-md"
                 onSubmit={handleSubmit}
             >
-                <h1 className="text-4xl font-bold mb-6 text-dracula-purple text-center">
-                    Log In
-                </h1>
                 <div className="mb-4">
                     <label
                         htmlFor="email"
