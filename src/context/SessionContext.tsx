@@ -2,7 +2,9 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 
+// Update the User interface to include `id`
 interface User {
+    id: string; // Add the id property
     email: string;
     role: string;
 }
@@ -28,7 +30,7 @@ export const SessionProvider = ({
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
             setIsLoggedIn(true);
-            setUser(JSON.parse(storedUser)); // Directly parse the user object
+            setUser(JSON.parse(storedUser)); // Parse and set the user object
         }
     }, []);
 
