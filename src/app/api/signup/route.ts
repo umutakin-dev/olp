@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
-import sqlite3 from "sqlite3";
+import { databases } from "@/lib/appwrite";
 import bcrypt from "bcrypt";
-import { User } from "../../types/user"; // Adjust this import based on your structure
-
-interface SQLiteError extends Error {
-    code: string;
-}
 
 export async function POST(req: Request) {
     const body = await req.json();
@@ -20,70 +15,44 @@ export async function POST(req: Request) {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const db = new sqlite3.Database("./olp.db");
 
-        return new Promise((resolve) => {
-            db.run(
-                "INSERT INTO users (email, password, role) VALUES (?, ?, ?)",
-                [email, hashedPassword, role],
-                function (err: SQLiteError | null) {
-                    if (err) {
-                        db.close();
-                        if (err.code === "SQLITE_CONSTRAINT") {
-                            resolve(
-                                NextResponse.json(
-                                    { error: "Email already exists" },
-                                    { status: 400 }
-                                )
-                            );
-                        } else {
-                            resolve(
-                                NextResponse.json(
-                                    { error: "Database error" },
-                                    { status: 500 }
-                                )
-                            );
-                        }
-                    } else {
-                        // Query the newly created user
-                        db.get(
-                            "SELECT id, email, role FROM users WHERE email = ?",
-                            [email],
-                            (
-                                err: SQLiteError | null,
-                                user: Pick<User, "id" | "email" | "role">
-                            ) => {
-                                db.close();
-                                if (err) {
-                                    resolve(
-                                        NextResponse.json(
-                                            { error: "Database error" },
-                                            { status: 500 }
-                                        )
-                                    );
-                                } else {
-                                    resolve(
-                                        NextResponse.json(
-                                            {
-                                                message:
-                                                    "User registered successfully!",
-                                                user, // Return only id, email, and role
-                                            },
-                                            { status: 201 }
-                                        )
-                                    );
-                                }
-                            }
-                        );
-                    }
-                }
-            );
-        });
-    } catch (error) {
-        console.error("Signup error:", error); // Optional: Log the error
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
+        const response = await databases.createDocument(
+            "677d29f70023c8163ec9",
+            "677d29fc00392e98bc88",
+            "unique()",
+            {
+                email,
+                password: hashedPassword,
+                role,
+            }
         );
+
+        return NextResponse.json(
+            {
+                message: "User registered successfully!",
+                user: {
+                    id: response.$id,
+                    email: response.email,
+                    role: response.role,
+                },
+            },
+            { status: 201 }
+        );
+    } catch (error) {
+        console.error("Error during user registration:", error);
+        if (error instanceof Error) {
+            return NextResponse.json(
+                { error: "Failed to register user", details: error.message },
+                { status: 500 }
+            );
+        } else {
+            return NextResponse.json(
+                {
+                    error: "Failed to register user",
+                    details: "Unknown error occurred",
+                },
+                { status: 500 }
+            );
+        }
     }
 }
