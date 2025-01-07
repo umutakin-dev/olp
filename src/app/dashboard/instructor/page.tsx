@@ -1,573 +1,97 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "@/context/SessionContext";
 
+interface Course {
+    id: string;
+    title: string;
+    description: string;
+    price: number;
+}
+
 export default function InstructorDashboard() {
-    const [formData, setFormData] = useState({
-        title: "",
-        description: "",
-        price: "",
-    });
-
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState("");
-
-    // Use session context to retrieve the logged-in user
+    const router = useRouter();
     const { user } = useSession();
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-    };
+    useEffect(() => {
+        const fetchCourses = async () => {
+            if (!user || user.role !== "instructor") return;
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-
-        try {
-            // Ensure the user is valid and has the role of 'instructor'
-            if (!user || user.role !== "instructor") {
-                setMessage(
-                    "You must be logged in as an instructor to create a course."
-                );
-                return;
+            try {
+                const res = await fetch(`/api/courses?instructorId=${user.id}`);
+                if (!res.ok) {
+                    throw new Error("Failed to fetch courses");
+                }
+                const data = await res.json();
+                setCourses(data.courses);
+            } catch (err) {
+                console.error(err);
+                setError("Failed to load courses.");
+            } finally {
+                setLoading(false);
             }
+        };
 
-            const res = await fetch("/api/courses", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ...formData,
-                    price: parseFloat(formData.price),
-                    instructorId: user.id, // Dynamic instructor ID from SessionContext
-                }),
-            });
-
-            if (res.ok) {
-                const { message } = await res.json();
-                setMessage(message);
-                setFormData({ title: "", description: "", price: "" });
-            } else {
-                const { error } = await res.json();
-                setMessage(error);
-            }
-        } catch (error) {
-            console.error("Error creating course:", error);
-            setMessage("Failed to create course. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
+        fetchCourses();
+    }, [user]);
 
     return (
         <div className="flex flex-col flex-grow bg-dracula-background text-dracula-foreground">
-            <main className="flex flex-col items-center justify-center flex-grow">
-                <form
-                    className="w-96 p-6 bg-dracula-currentLine rounded-lg shadow-md"
-                    onSubmit={handleSubmit}
+            <main className="flex flex-col items-center justify-start flex-grow p-6">
+                <h1 className="text-3xl font-bold mb-6">
+                    Instructor Dashboard
+                </h1>
+                <button
+                    onClick={() =>
+                        router.push("/dashboard/instructor/create-course")
+                    }
+                    className="px-6 py-3 bg-dracula-green text-dracula-background rounded hover:bg-dracula-cyan focus:ring-dracula-purple mb-6"
                 >
-                    <h2 className="text-2xl font-semibold mb-4 text-dracula-green">
-                        Create a New Course
-                    </h2>
-                    <div className="mb-4">
-                        <label
-                            htmlFor="title"
-                            className="block font-medium mb-1 text-dracula-foreground"
-                        >
-                            Course Title
-                        </label>
-                        <input
-                            type="text"
-                            name="title"
-                            id="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-dracula-selection rounded bg-dracula-background text-dracula-foreground focus:ring-dracula-purple focus:outline-none"
-                            required
-                        />
+                    Create a New Course
+                </button>
+                {loading ? (
+                    <p>Loading courses...</p>
+                ) : error ? (
+                    <p className="text-dracula-red">{error}</p>
+                ) : courses.length === 0 ? (
+                    <p>No courses created yet.</p>
+                ) : (
+                    <div className="w-full max-w-4xl">
+                        <table className="w-full text-left bg-dracula-currentLine rounded-lg overflow-hidden">
+                            <thead className="bg-dracula-selection text-dracula-foreground">
+                                <tr>
+                                    <th className="px-4 py-2">Title</th>
+                                    <th className="px-4 py-2">Description</th>
+                                    <th className="px-4 py-2">Price ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {courses.map((course) => (
+                                    <tr
+                                        key={course.id} // Unique key prop
+                                        className="hover:bg-dracula-comment transition-colors"
+                                    >
+                                        <td className="px-4 py-2">
+                                            {course.title}
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            {course.description}
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            {course.price}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
-                    <div className="mb-4">
-                        <label
-                            htmlFor="description"
-                            className="block font-medium mb-1 text-dracula-foreground"
-                        >
-                            Description
-                        </label>
-                        <textarea
-                            name="description"
-                            id="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-dracula-selection rounded bg-dracula-background text-dracula-foreground focus:ring-dracula-purple focus:outline-none"
-                            rows={4}
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label
-                            htmlFor="price"
-                            className="block font-medium mb-1 text-dracula-foreground"
-                        >
-                            Price ($)
-                        </label>
-                        <input
-                            type="number"
-                            name="price"
-                            id="price"
-                            value={formData.price}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-dracula-selection rounded bg-dracula-background text-dracula-foreground focus:ring-dracula-purple focus:outline-none"
-                            required
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        className="w-full bg-dracula-green text-dracula-background py-2 rounded hover:bg-dracula-cyan focus:ring-dracula-purple focus:outline-none"
-                        disabled={loading}
-                    >
-                        {loading ? "Creating..." : "Create Course"}
-                    </button>
-                </form>
-                {message && (
-                    <p className="mt-4 text-center text-dracula-yellow font-medium">
-                        {message}
-                    </p>
                 )}
             </main>
         </div>
     );
 }
-
-// "use client";
-
-// import { useState } from "react";
-// import { useSession } from "@/context/SessionContext";
-
-// export default function InstructorDashboard() {
-//     const [formData, setFormData] = useState({
-//         title: "",
-//         description: "",
-//         price: "",
-//     });
-
-//     const [loading, setLoading] = useState(false);
-//     const [message, setMessage] = useState("");
-
-//     // Use session context to retrieve the logged-in user
-//     const { user } = useSession();
-
-//     const handleChange = (
-//         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-//     ) => {
-//         const { name, value } = e.target;
-//         setFormData((prev) => ({ ...prev, [name]: value }));
-//     };
-
-//     const handleSubmit = async (e: React.FormEvent) => {
-//         e.preventDefault();
-//         setLoading(true);
-
-//         try {
-//             // Ensure the user is valid and has the role of 'instructor'
-//             if (!user || user.role !== "instructor") {
-//                 setMessage(
-//                     "You must be logged in as an instructor to create a course."
-//                 );
-//                 return;
-//             }
-
-//             const res = await fetch("/api/courses", {
-//                 method: "POST",
-//                 headers: { "Content-Type": "application/json" },
-//                 body: JSON.stringify({
-//                     ...formData,
-//                     price: parseFloat(formData.price),
-//                     instructorId: user.id, // Dynamic instructor ID from SessionContext
-//                 }),
-//             });
-
-//             if (res.ok) {
-//                 const { message } = await res.json();
-//                 setMessage(message);
-//                 setFormData({ title: "", description: "", price: "" });
-//             } else {
-//                 const { error } = await res.json();
-//                 setMessage(error);
-//             }
-//         } catch (error) {
-//             console.error("Error creating course:", error);
-//             setMessage("Failed to create course. Please try again.");
-//         } finally {
-//             setLoading(false);
-//         }
-//     };
-
-//     return (
-//         <div className="flex flex-col min-h-[calc(100vh-6rem)] overflow-hidden bg-dracula-background text-dracula-foreground">
-//             <main className="flex flex-col items-center justify-center flex-grow">
-//                 <form
-//                     className="w-96 p-6 bg-dracula-currentLine rounded-lg shadow-md"
-//                     onSubmit={handleSubmit}
-//                 >
-//                     <h2 className="text-2xl font-semibold mb-4 text-dracula-green">
-//                         Create a New Course
-//                     </h2>
-//                     <div className="mb-4">
-//                         <label
-//                             htmlFor="title"
-//                             className="block font-medium mb-1 text-dracula-foreground"
-//                         >
-//                             Course Title
-//                         </label>
-//                         <input
-//                             type="text"
-//                             name="title"
-//                             id="title"
-//                             value={formData.title}
-//                             onChange={handleChange}
-//                             className="w-full px-4 py-2 border border-dracula-selection rounded bg-dracula-background text-dracula-foreground focus:ring-dracula-purple focus:outline-none"
-//                             required
-//                         />
-//                     </div>
-//                     <div className="mb-4">
-//                         <label
-//                             htmlFor="description"
-//                             className="block font-medium mb-1 text-dracula-foreground"
-//                         >
-//                             Description
-//                         </label>
-//                         <textarea
-//                             name="description"
-//                             id="description"
-//                             value={formData.description}
-//                             onChange={handleChange}
-//                             className="w-full px-4 py-2 border border-dracula-selection rounded bg-dracula-background text-dracula-foreground focus:ring-dracula-purple focus:outline-none"
-//                             rows={4}
-//                         />
-//                     </div>
-//                     <div className="mb-4">
-//                         <label
-//                             htmlFor="price"
-//                             className="block font-medium mb-1 text-dracula-foreground"
-//                         >
-//                             Price ($)
-//                         </label>
-//                         <input
-//                             type="number"
-//                             name="price"
-//                             id="price"
-//                             value={formData.price}
-//                             onChange={handleChange}
-//                             className="w-full px-4 py-2 border border-dracula-selection rounded bg-dracula-background text-dracula-foreground focus:ring-dracula-purple focus:outline-none"
-//                             required
-//                         />
-//                     </div>
-//                     <button
-//                         type="submit"
-//                         className="w-full bg-dracula-green text-dracula-background py-2 rounded hover:bg-dracula-cyan focus:ring-dracula-purple focus:outline-none"
-//                         disabled={loading}
-//                     >
-//                         {loading ? "Creating..." : "Create Course"}
-//                     </button>
-//                 </form>
-//                 {message && (
-//                     <p className="mt-4 text-center text-dracula-yellow font-medium">
-//                         {message}
-//                     </p>
-//                 )}
-//             </main>
-//         </div>
-//     );
-// }
-
-// "use client";
-
-// import { useState } from "react";
-// import { useSession } from "@/context/SessionContext";
-
-// export default function InstructorDashboard() {
-//     const [formData, setFormData] = useState({
-//         title: "",
-//         description: "",
-//         price: "",
-//     });
-
-//     const [loading, setLoading] = useState(false);
-//     const [message, setMessage] = useState("");
-
-//     // Use session context to retrieve the logged-in user
-//     const { user } = useSession();
-
-//     const handleChange = (
-//         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-//     ) => {
-//         const { name, value } = e.target;
-//         setFormData((prev) => ({ ...prev, [name]: value }));
-//     };
-
-//     const handleSubmit = async (e: React.FormEvent) => {
-//         e.preventDefault();
-//         setLoading(true);
-
-//         try {
-//             // Ensure the user is valid and has the role of 'instructor'
-//             if (!user || user.role !== "instructor") {
-//                 setMessage(
-//                     "You must be logged in as an instructor to create a course."
-//                 );
-//                 return;
-//             }
-
-//             const res = await fetch("/api/courses", {
-//                 method: "POST",
-//                 headers: { "Content-Type": "application/json" },
-//                 body: JSON.stringify({
-//                     ...formData,
-//                     price: parseFloat(formData.price),
-//                     instructorId: user.id, // Dynamic instructor ID from SessionContext
-//                 }),
-//             });
-
-//             if (res.ok) {
-//                 const { message } = await res.json();
-//                 setMessage(message);
-//                 setFormData({ title: "", description: "", price: "" });
-//             } else {
-//                 const { error } = await res.json();
-//                 setMessage(error);
-//             }
-//         } catch (error) {
-//             console.error("Error creating course:", error);
-//             setMessage("Failed to create course. Please try again.");
-//         } finally {
-//             setLoading(false);
-//         }
-//     };
-
-//     return (
-//         <div className="flex flex-col min-h-[calc(100vh-64px)] bg-dracula-background text-dracula-foreground">
-//             <header className="w-full h-16  bg-dracula-currentLine text-dracula-foreground flex items-center justify-center shadow-md rounded-lg">
-//                 <h1 className="text-3xl font-bold text-dracula-cyan">
-//                     Instructor Dashboard
-//                 </h1>
-//             </header>
-//             <main className="flex flex-col items-center justify-center flex-grow">
-//                 <form
-//                     className="w-96 p-6 bg-dracula-currentLine rounded-lg shadow-md"
-//                     onSubmit={handleSubmit}
-//                 >
-//                     <h2 className="text-2xl font-semibold mb-4 text-dracula-green">
-//                         Create a New Course
-//                     </h2>
-//                     <div className="mb-4">
-//                         <label
-//                             htmlFor="title"
-//                             className="block font-medium mb-1 text-dracula-foreground"
-//                         >
-//                             Course Title
-//                         </label>
-//                         <input
-//                             type="text"
-//                             name="title"
-//                             id="title"
-//                             value={formData.title}
-//                             onChange={handleChange}
-//                             className="w-full px-4 py-2 border border-dracula-selection rounded bg-dracula-background text-dracula-foreground focus:ring-dracula-purple focus:outline-none"
-//                             required
-//                         />
-//                     </div>
-//                     <div className="mb-4">
-//                         <label
-//                             htmlFor="description"
-//                             className="block font-medium mb-1 text-dracula-foreground"
-//                         >
-//                             Description
-//                         </label>
-//                         <textarea
-//                             name="description"
-//                             id="description"
-//                             value={formData.description}
-//                             onChange={handleChange}
-//                             className="w-full px-4 py-2 border border-dracula-selection rounded bg-dracula-background text-dracula-foreground focus:ring-dracula-purple focus:outline-none"
-//                             rows={4}
-//                         />
-//                     </div>
-//                     <div className="mb-4">
-//                         <label
-//                             htmlFor="price"
-//                             className="block font-medium mb-1 text-dracula-foreground"
-//                         >
-//                             Price ($)
-//                         </label>
-//                         <input
-//                             type="number"
-//                             name="price"
-//                             id="price"
-//                             value={formData.price}
-//                             onChange={handleChange}
-//                             className="w-full px-4 py-2 border border-dracula-selection rounded bg-dracula-background text-dracula-foreground focus:ring-dracula-purple focus:outline-none"
-//                             required
-//                         />
-//                     </div>
-//                     <button
-//                         type="submit"
-//                         className="w-full bg-dracula-green text-dracula-background py-2 rounded hover:bg-dracula-cyan focus:ring-dracula-purple focus:outline-none"
-//                         disabled={loading}
-//                     >
-//                         {loading ? "Creating..." : "Create Course"}
-//                     </button>
-//                 </form>
-//                 {message && (
-//                     <p className="mt-4 text-center text-dracula-yellow font-medium">
-//                         {message}
-//                     </p>
-//                 )}
-//             </main>
-//         </div>
-//     );
-// }
-
-// "use client";
-
-// import { useState } from "react";
-// import { useSession } from "@/context/SessionContext";
-
-// export default function InstructorDashboard() {
-//     const [formData, setFormData] = useState({
-//         title: "",
-//         description: "",
-//         price: "",
-//     });
-
-//     const [loading, setLoading] = useState(false);
-//     const [message, setMessage] = useState("");
-
-//     // Use session context to retrieve the logged-in user
-//     const { user } = useSession();
-
-//     const handleChange = (
-//         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-//     ) => {
-//         const { name, value } = e.target;
-//         setFormData((prev) => ({ ...prev, [name]: value }));
-//     };
-
-//     const handleSubmit = async (e: React.FormEvent) => {
-//         e.preventDefault();
-//         setLoading(true);
-
-//         try {
-//             // Ensure the user is valid and has the role of 'instructor'
-//             if (!user || user.role !== "instructor") {
-//                 setMessage(
-//                     "You must be logged in as an instructor to create a course."
-//                 );
-//                 return;
-//             }
-
-//             const res = await fetch("/api/courses", {
-//                 method: "POST",
-//                 headers: { "Content-Type": "application/json" },
-//                 body: JSON.stringify({
-//                     ...formData,
-//                     price: parseFloat(formData.price),
-//                     instructorId: user.id, // Dynamic instructor ID from SessionContext
-//                 }),
-//             });
-
-//             if (res.ok) {
-//                 const { message } = await res.json();
-//                 setMessage(message);
-//                 setFormData({ title: "", description: "", price: "" });
-//             } else {
-//                 const { error } = await res.json();
-//                 setMessage(error);
-//             }
-//         } catch (error) {
-//             console.error("Error creating course:", error);
-//             setMessage("Failed to create course. Please try again.");
-//         } finally {
-//             setLoading(false);
-//         }
-//     };
-
-//     return (
-//         <div className="flex flex-col items-center justify-center min-h-screen bg-dracula-background text-dracula-foreground">
-//             <h1 className="text-3xl font-bold mb-6 text-dracula-cyan">
-//                 Instructor Dashboard
-//             </h1>
-//             <form
-//                 className="w-96 p-6 bg-dracula-currentLine rounded-lg shadow-md"
-//                 onSubmit={handleSubmit}
-//             >
-//                 <h2 className="text-2xl font-semibold mb-4 text-dracula-green">
-//                     Create a New Course
-//                 </h2>
-//                 <div className="mb-4">
-//                     <label
-//                         htmlFor="title"
-//                         className="block font-medium mb-1 text-dracula-foreground"
-//                     >
-//                         Course Title
-//                     </label>
-//                     <input
-//                         type="text"
-//                         name="title"
-//                         id="title"
-//                         value={formData.title}
-//                         onChange={handleChange}
-//                         className="w-full px-4 py-2 border border-dracula-selection rounded bg-dracula-background text-dracula-foreground focus:ring-dracula-purple focus:outline-none"
-//                         required
-//                     />
-//                 </div>
-//                 <div className="mb-4">
-//                     <label
-//                         htmlFor="description"
-//                         className="block font-medium mb-1 text-dracula-foreground"
-//                     >
-//                         Description
-//                     </label>
-//                     <textarea
-//                         name="description"
-//                         id="description"
-//                         value={formData.description}
-//                         onChange={handleChange}
-//                         className="w-full px-4 py-2 border border-dracula-selection rounded bg-dracula-background text-dracula-foreground focus:ring-dracula-purple focus:outline-none"
-//                         rows={4}
-//                     />
-//                 </div>
-//                 <div className="mb-4">
-//                     <label
-//                         htmlFor="price"
-//                         className="block font-medium mb-1 text-dracula-foreground"
-//                     >
-//                         Price ($)
-//                     </label>
-//                     <input
-//                         type="number"
-//                         name="price"
-//                         id="price"
-//                         value={formData.price}
-//                         onChange={handleChange}
-//                         className="w-full px-4 py-2 border border-dracula-selection rounded bg-dracula-background text-dracula-foreground focus:ring-dracula-purple focus:outline-none"
-//                         required
-//                     />
-//                 </div>
-//                 <button
-//                     type="submit"
-//                     className="w-full bg-dracula-green text-dracula-background py-2 rounded hover:bg-dracula-cyan focus:ring-dracula-purple focus:outline-none"
-//                     disabled={loading}
-//                 >
-//                     {loading ? "Creating..." : "Create Course"}
-//                 </button>
-//             </form>
-//             {message && (
-//                 <p className="mt-4 text-center text-dracula-yellow font-medium">
-//                     {message}
-//                 </p>
-//             )}
-//         </div>
-//     );
-// }

@@ -1,10 +1,41 @@
 import { NextResponse } from "next/server";
 import { databases } from "@/lib/appwrite";
-// import { Query } from "node-appwrite";
+import { Query } from "node-appwrite";
 import {
     APPWRITE_DATABASE_ID,
     APPWRITE_COURSE_COLLECTION_ID,
 } from "@/config/appwrite";
+
+export async function GET(req: Request) {
+    const { searchParams } = new URL(req.url);
+    const instructorId = searchParams.get("instructorId");
+
+    if (!instructorId) {
+        return NextResponse.json(
+            { error: "Missing instructor ID" },
+            { status: 400 }
+        );
+    }
+
+    try {
+        const response = await databases.listDocuments(
+            APPWRITE_DATABASE_ID,
+            APPWRITE_COURSE_COLLECTION_ID,
+            [Query.equal("instructorId", instructorId)]
+        );
+
+        return NextResponse.json(
+            { courses: response.documents },
+            { status: 200 }
+        );
+    } catch (error) {
+        console.error("Error fetching courses:", error);
+        return NextResponse.json(
+            { error: "Failed to fetch courses" },
+            { status: 500 }
+        );
+    }
+}
 
 export async function POST(req: Request) {
     const body = await req.json();
