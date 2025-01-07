@@ -3,13 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/context/SessionContext";
-
-interface Course {
-    id: string;
-    title: string;
-    description: string;
-    price: number;
-}
+import { Course } from "@/types/course"; // Import the Course type
 
 export default function InstructorDashboard() {
     const router = useRouter();
@@ -73,7 +67,7 @@ export default function InstructorDashboard() {
                             <tbody>
                                 {courses.map((course) => (
                                     <tr
-                                        key={course.id} // Unique key prop
+                                        key={course.$id}
                                         className="hover:bg-dracula-comment transition-colors"
                                     >
                                         <td className="px-4 py-2">
