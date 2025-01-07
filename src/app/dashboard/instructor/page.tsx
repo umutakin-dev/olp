@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/context/SessionContext";
-import { Course } from "@/types/course"; // Import the Course type
+import { Course } from "@/types/course";
 
 export default function InstructorDashboard() {
     const router = useRouter();

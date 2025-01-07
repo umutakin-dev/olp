@@ -6,6 +6,7 @@ import {
     APPWRITE_USER_COLLECTION_ID,
 } from "@/config/appwrite";
 import bcrypt from "bcrypt";
+import type { User } from "@/types/user";
 
 export async function POST(req: Request) {
     const body = await req.json();
@@ -19,14 +20,12 @@ export async function POST(req: Request) {
     }
 
     try {
-        // Use Query.equal for the correct filter
         const response = await databases.listDocuments(
             APPWRITE_DATABASE_ID,
             APPWRITE_USER_COLLECTION_ID,
             [Query.equal("email", email)]
         );
 
-        // Check if user exists
         if (response.documents.length === 0) {
             return NextResponse.json(
                 { error: "User not found" },
@@ -34,10 +33,16 @@ export async function POST(req: Request) {
             );
         }
 
-        // Get the first document
-        const user = response.documents[0];
+        const userDoc = response.documents[0];
 
-        // Validate the password
+        const user: User = {
+            id: userDoc.$id,
+            email: userDoc.email,
+            password: userDoc.password,
+            role: userDoc.role,
+            created_at: userDoc.created_at,
+        };
+
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
@@ -47,11 +52,14 @@ export async function POST(req: Request) {
             );
         }
 
-        // Respond with user data
         return NextResponse.json(
             {
                 message: "Login successful",
-                user: { id: user.$id, email: user.email, role: user.role },
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    role: user.role,
+                },
             },
             { status: 200 }
         );

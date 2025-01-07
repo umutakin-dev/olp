@@ -5,6 +5,7 @@ import {
     APPWRITE_DATABASE_ID,
     APPWRITE_USER_COLLECTION_ID,
 } from "@/config/appwrite";
+import type { User } from "@/types/user";
 
 export async function POST(req: Request) {
     const body = await req.json();
@@ -31,13 +32,21 @@ export async function POST(req: Request) {
             }
         );
 
+        const user: User = {
+            id: response.$id,
+            email: response.email,
+            password: response.password,
+            role: response.role as "instructor" | "student" | "admin",
+            created_at: response.created_at,
+        };
+
         return NextResponse.json(
             {
                 message: "User registered successfully!",
                 user: {
-                    id: response.$id,
-                    email: response.email,
-                    role: response.role,
+                    id: user.id,
+                    email: user.email,
+                    role: user.role,
                 },
             },
             { status: 201 }

@@ -1,13 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-
-// Update the User interface to include `id`
-interface User {
-    id: string; // Add the id property
-    email: string;
-    role: string;
-}
+import type { User } from "@/types/user";
 
 interface SessionContextType {
     isLoggedIn: boolean;
@@ -29,8 +23,9 @@ export const SessionProvider = ({
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
+            const parsedUser: User = JSON.parse(storedUser);
             setIsLoggedIn(true);
-            setUser(JSON.parse(storedUser)); // Parse and set the user object
+            setUser(parsedUser);
         }
     }, []);
 
@@ -53,7 +48,6 @@ export const SessionProvider = ({
     );
 };
 
-// Custom hook to use session context
 export const useSession = () => {
     const context = useContext(SessionContext);
     if (!context) {
