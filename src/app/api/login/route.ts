@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { Query } from "node-appwrite";
 import { databases } from "@/lib/appwrite";
+import {
+    APPWRITE_DATABASE_ID,
+    APPWRITE_USER_COLLECTION_ID,
+} from "@/config/appwrite";
 import bcrypt from "bcrypt";
 
 export async function POST(req: Request) {
@@ -17,8 +21,8 @@ export async function POST(req: Request) {
     try {
         // Use Query.equal for the correct filter
         const response = await databases.listDocuments(
-            "677d29f70023c8163ec9", // Database ID
-            "677d29fc00392e98bc88", // Collection ID
+            APPWRITE_DATABASE_ID,
+            APPWRITE_USER_COLLECTION_ID,
             [Query.equal("email", email)]
         );
 

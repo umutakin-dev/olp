@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { databases } from "@/lib/appwrite";
 import bcrypt from "bcrypt";
+import {
+    APPWRITE_DATABASE_ID,
+    APPWRITE_USER_COLLECTION_ID,
+} from "@/config/appwrite";
 
 export async function POST(req: Request) {
     const body = await req.json();
@@ -17,8 +21,8 @@ export async function POST(req: Request) {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const response = await databases.createDocument(
-            "677d29f70023c8163ec9",
-            "677d29fc00392e98bc88",
+            APPWRITE_DATABASE_ID,
+            APPWRITE_USER_COLLECTION_ID,
             "unique()",
             {
                 email,

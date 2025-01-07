@@ -21,7 +21,8 @@
         "paths": {
             "@/*": ["./src/*"],
             "@/types/*": ["./src/types/*"],
-            "@/lib/*": ["./src/lib/*"]
+            "@/lib/*": ["./src/lib/*"],
+            "@/config/*": ["./src/config/*"]
         },
         "baseUrl": "."
     },
