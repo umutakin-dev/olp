@@ -5,17 +5,30 @@ import { SessionProvider, useSession } from "../context/SessionContext";
 import { useRouter } from "next/navigation";
 
 function Header() {
-    const { isLoggedIn, logout } = useSession();
+    const { isLoggedIn, user, logout } = useSession();
     const router = useRouter();
+
+    const handleTitleClick = () => {
+        if (isLoggedIn) {
+            router.push(`/dashboard/${user?.role}`);
+        } else {
+            router.push("/");
+        }
+    };
 
     const handleLogout = () => {
         logout();
-        router.push("/"); // Redirect to the landing page
+        router.push("/");
     };
 
     return (
         <header className="w-full p-4 bg-dracula-currentLine text-dracula-foreground flex items-center justify-between">
-            <h1 className="text-lg font-bold">Online Learning Platform</h1>
+            <h1
+                className="text-lg font-bold cursor-pointer hover:text-dracula-green"
+                onClick={handleTitleClick}
+            >
+                Online Learning Platform
+            </h1>
             {isLoggedIn && (
                 <button
                     onClick={handleLogout}
