@@ -37,25 +37,32 @@ export default function InstructorDashboard() {
     return (
         <div className="flex flex-col flex-grow bg-dracula-background text-dracula-foreground">
             <main className="flex flex-col items-center justify-start flex-grow p-6">
-                <h1 className="text-3xl font-bold mb-6">
-                    Instructor Dashboard
-                </h1>
-                <button
-                    onClick={() =>
-                        router.push("/dashboard/instructor/create-course")
-                    }
-                    className="px-6 py-3 bg-dracula-green text-dracula-background rounded hover:bg-dracula-cyan focus:ring-dracula-purple mb-6"
-                >
-                    Create a New Course
-                </button>
-                {loading ? (
-                    <p>Loading courses...</p>
-                ) : error ? (
-                    <p className="text-dracula-red">{error}</p>
-                ) : courses.length === 0 ? (
-                    <p>No courses created yet.</p>
-                ) : (
-                    <div className="w-full max-w-4xl">
+                <div className="w-full max-w-4xl">
+                    {/* Header Section */}
+                    <div className="flex flex-col items-start mb-6">
+                        <h1 className="text-3xl font-bold mb-4">
+                            Instructor Dashboard
+                        </h1>
+                        <button
+                            onClick={() =>
+                                router.push(
+                                    "/dashboard/instructor/create-course"
+                                )
+                            }
+                            className="px-6 py-3 bg-dracula-green text-dracula-background rounded hover:bg-dracula-cyan focus:ring-dracula-purple"
+                        >
+                            Create a New Course
+                        </button>
+                    </div>
+
+                    {/* Course Table Section */}
+                    {loading ? (
+                        <p>Loading courses...</p>
+                    ) : error ? (
+                        <p className="text-dracula-red">{error}</p>
+                    ) : courses.length === 0 ? (
+                        <p>No courses created yet.</p>
+                    ) : (
                         <table className="w-full text-left bg-dracula-currentLine rounded-lg overflow-hidden">
                             <thead className="bg-dracula-selection text-dracula-foreground">
                                 <tr>
@@ -83,8 +90,8 @@ export default function InstructorDashboard() {
                                 ))}
                             </tbody>
                         </table>
-                    </div>
-                )}
+                    )}
+                </div>
             </main>
         </div>
     );
