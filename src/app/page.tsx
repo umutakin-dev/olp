@@ -1,4 +1,20 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "@/context/SessionContext";
+
 export default function LandingPage() {
+    const { isLoggedIn, user } = useSession();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (isLoggedIn && user) {
+            // Redirect to the user's dashboard
+            router.replace(`/dashboard/${user.role}`);
+        }
+    }, [isLoggedIn, user, router]);
+
     return (
         <div className="flex flex-col items-center justify-center w-full h-full text-center">
             <h1 className="text-4xl font-bold mb-4 text-dracula-purple">

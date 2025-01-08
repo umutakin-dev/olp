@@ -16,8 +16,9 @@ function Header() {
         }
     };
 
-    const handleLogout = () => {
-        logout();
+    const handleLogout = async () => {
+        await fetch("/api/logout", { method: "POST" }); // Clear server-side cookie
+        logout(); // Clear client-side state and localStorage
         router.push("/");
     };
 

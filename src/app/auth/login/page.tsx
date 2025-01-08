@@ -1,13 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "../../../context/SessionContext";
 
 export default function LoginPage() {
     const [formData, setFormData] = useState({ email: "", password: "" });
     const router = useRouter();
-    const { login } = useSession();
+    const { isLoggedIn, user, login } = useSession();
+
+    // Redirect logged-in users
+    useEffect(() => {
+        if (isLoggedIn && user) {
+            router.replace(`/dashboard/${user.role}`);
+        }
+    }, [isLoggedIn, user, router]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;

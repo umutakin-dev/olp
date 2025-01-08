@@ -52,7 +52,7 @@ export async function POST(req: Request) {
             );
         }
 
-        return NextResponse.json(
+        const res = NextResponse.json(
             {
                 message: "Login successful",
                 user: {
@@ -63,6 +63,20 @@ export async function POST(req: Request) {
             },
             { status: 200 }
         );
+
+        // Set cookie for session
+        res.cookies.set(
+            "user",
+            JSON.stringify({ id: user.id, role: user.role }),
+            {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                path: "/",
+            }
+        );
+
+        return res;
     } catch (error) {
         console.error("Error during login:", error);
         if (error instanceof Error) {
