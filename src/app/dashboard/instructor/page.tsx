@@ -75,7 +75,12 @@ export default function InstructorDashboard() {
                                 {courses.map((course) => (
                                     <tr
                                         key={course.$id}
-                                        className="hover:bg-dracula-comment transition-colors"
+                                        className="hover:bg-dracula-comment transition-colors cursor-pointer"
+                                        onClick={() =>
+                                            router.push(
+                                                `/dashboard/instructor/course/${course.$id}`
+                                            )
+                                        }
                                     >
                                         <td className="px-4 py-2">
                                             {course.title}
@@ -89,6 +94,24 @@ export default function InstructorDashboard() {
                                     </tr>
                                 ))}
                             </tbody>
+                            {/* <tbody>
+                                {courses.map((course) => (
+                                    <tr
+                                        key={course.$id}
+                                        className="hover:bg-dracula-comment transition-colors"
+                                    >
+                                        <td className="px-4 py-2">
+                                            {course.title}
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            {course.description}
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            {course.price}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody> */}
                         </table>
                     )}
                 </div>
