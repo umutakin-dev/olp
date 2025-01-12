@@ -3,18 +3,20 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Section } from "@/app/types/section";
+import { useRouter } from "next/navigation";
 
 export default function ManageSectionsPage() {
-    const { id: courseId } = useParams();
+    const { courseId } = useParams();
     const [sections, setSections] = useState<Section[]>([]);
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
+    const router = useRouter();
+
     console.log("Params:", courseId);
 
-    // Fetch sections for the course
     useEffect(() => {
         const fetchSections = async () => {
             try {
@@ -34,7 +36,6 @@ export default function ManageSectionsPage() {
         fetchSections();
     }, [courseId]);
 
-    // Handle adding a new section
     const handleAddSection = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
@@ -56,8 +57,6 @@ export default function ManageSectionsPage() {
         }
     };
 
-    // console.log("Params:", params);
-
     return (
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-6rem)] bg-dracula-background text-dracula-foreground">
             <h1 className="text-3xl font-bold mb-6">Manage Sections</h1>
@@ -78,6 +77,16 @@ export default function ManageSectionsPage() {
                             <p className="text-sm text-dracula-comment">
                                 {section.description}
                             </p>
+                            <button
+                                onClick={() =>
+                                    router.push(
+                                        `/dashboard/instructor/course/${courseId}/sections/${section.$id}/content`
+                                    )
+                                }
+                                className="px-4 py-2 bg-dracula-green text-dracula-background rounded hover:bg-dracula-cyan"
+                            >
+                                Manage Content
+                            </button>
                         </li>
                     ))}
                 </ul>

@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { Course } from "@/types/course";
 
 export default function CourseDetailsPage() {
-    const { id } = useParams();
+    const { courseId } = useParams();
     const router = useRouter();
     const [course, setCourse] = useState<Course | null>(null);
     const [loading, setLoading] = useState(true);
@@ -15,7 +15,7 @@ export default function CourseDetailsPage() {
     useEffect(() => {
         const fetchCourseDetails = async () => {
             try {
-                const res = await fetch(`/api/courses/${id}`);
+                const res = await fetch(`/api/courses/${courseId}`);
                 if (!res.ok) {
                     throw new Error("Failed to fetch course details");
                 }
@@ -30,7 +30,7 @@ export default function CourseDetailsPage() {
         };
 
         fetchCourseDetails();
-    }, [id]);
+    }, [courseId]);
 
     if (loading) {
         return <p>Loading course details...</p>;
