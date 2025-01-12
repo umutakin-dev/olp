@@ -5,13 +5,12 @@ import {
     APPWRITE_COURSE_COLLECTION_ID,
 } from "@/config/appwrite";
 
-// Explicitly define the type of the context parameter
 export async function GET(
     req: Request,
-    context: { params: Record<string, string> }
+    context: { params: { id: string } } // params is a direct property
 ) {
-    const { params } = context; // Extract params safely
-    const id = params.id; // Get the dynamic route parameter
+    // Await the params as per the latest Next.js API requirements
+    const { id } = await Promise.resolve(context.params);
 
     if (!id) {
         return NextResponse.json(
@@ -36,6 +35,155 @@ export async function GET(
         );
     }
 }
+
+// import { NextResponse } from "next/server";
+// import { databases } from "@/lib/appwrite";
+// import {
+//     APPWRITE_DATABASE_ID,
+//     APPWRITE_COURSE_COLLECTION_ID,
+// } from "@/config/appwrite";
+
+// export async function GET(
+//     req: Request,
+//     context: { params: () => Promise<{ id: string }> } // params is now a function returning a Promise
+// ) {
+//     const { id } = await context.params(); // Await the params function
+
+//     if (!id) {
+//         return NextResponse.json(
+//             { error: "Missing course ID" },
+//             { status: 400 }
+//         );
+//     }
+
+//     try {
+//         const response = await databases.getDocument(
+//             APPWRITE_DATABASE_ID,
+//             APPWRITE_COURSE_COLLECTION_ID,
+//             id
+//         );
+
+//         return NextResponse.json({ course: response }, { status: 200 });
+//     } catch (error) {
+//         console.error("Error fetching course details:", error);
+//         return NextResponse.json(
+//             { error: "Failed to fetch course details" },
+//             { status: 500 }
+//         );
+//     }
+// }
+
+// import { NextResponse } from "next/server";
+// import { databases } from "@/lib/appwrite";
+// import {
+//     APPWRITE_DATABASE_ID,
+//     APPWRITE_COURSE_COLLECTION_ID,
+// } from "@/config/appwrite";
+
+// // API Route for dynamic course ID
+// export async function GET(
+//     req: Request,
+//     { params }: { params: { id: string } } // Destructure params correctly
+// ) {
+//     const id = await params.id; // Await the params object to ensure it's resolved
+
+//     if (!id) {
+//         return NextResponse.json(
+//             { error: "Missing course ID" },
+//             { status: 400 }
+//         );
+//     }
+
+//     try {
+//         const response = await databases.getDocument(
+//             APPWRITE_DATABASE_ID,
+//             APPWRITE_COURSE_COLLECTION_ID,
+//             id
+//         );
+
+//         return NextResponse.json({ course: response }, { status: 200 });
+//     } catch (error) {
+//         console.error("Error fetching course details:", error);
+//         return NextResponse.json(
+//             { error: "Failed to fetch course details" },
+//             { status: 500 }
+//         );
+//     }
+// }
+
+// import { NextResponse } from "next/server";
+// import { databases } from "@/lib/appwrite";
+// import {
+//     APPWRITE_DATABASE_ID,
+//     APPWRITE_COURSE_COLLECTION_ID,
+// } from "@/config/appwrite";
+
+// // API Route for dynamic course ID
+// export async function GET(req: Request, context: { params: { id: string } }) {
+//     const { id } = context.params; // Correct way to extract the dynamic ID
+
+//     if (!id) {
+//         return NextResponse.json(
+//             { error: "Missing course ID" },
+//             { status: 400 }
+//         );
+//     }
+
+//     try {
+//         const response = await databases.getDocument(
+//             APPWRITE_DATABASE_ID,
+//             APPWRITE_COURSE_COLLECTION_ID,
+//             id
+//         );
+
+//         return NextResponse.json({ course: response }, { status: 200 });
+//     } catch (error) {
+//         console.error("Error fetching course details:", error);
+//         return NextResponse.json(
+//             { error: "Failed to fetch course details" },
+//             { status: 500 }
+//         );
+//     }
+// }
+
+// import { NextResponse } from "next/server";
+// import { databases } from "@/lib/appwrite";
+// import {
+//     APPWRITE_DATABASE_ID,
+//     APPWRITE_COURSE_COLLECTION_ID,
+// } from "@/config/appwrite";
+
+// // Explicitly define the type of the context parameter
+// export async function GET(
+//     req: Request,
+//     context: { params: Record<string, string> }
+// ) {
+//     const { params } = context; // Extract params safely
+//     const id = params.id; // Get the dynamic route parameter
+
+//     if (!id) {
+//         return NextResponse.json(
+//             { error: "Missing course ID" },
+//             { status: 400 }
+//         );
+//     }
+
+//     try {
+//         const response = await databases.getDocument(
+//             APPWRITE_DATABASE_ID,
+//             APPWRITE_COURSE_COLLECTION_ID,
+//             id
+//         );
+
+//         return NextResponse.json({ course: response }, { status: 200 });
+//     } catch (error) {
+//         console.error("Error fetching course details:", error);
+//         return NextResponse.json(
+//             { error: "Failed to fetch course details" },
+//             { status: 500 }
+//         );
+//     }
+// }
 
 // import { NextResponse } from "next/server";
 // import { databases } from "@/lib/appwrite";
