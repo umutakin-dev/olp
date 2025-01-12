@@ -57,6 +57,16 @@ export default function CourseDetailsPage() {
                     Price: ${course.price}
                 </p>
                 <button
+                    onClick={() =>
+                        router.push(
+                            `/dashboard/instructor/course/${course.$id}/sections`
+                        )
+                    }
+                    className="px-6 py-3 bg-dracula-green text-dracula-background rounded hover:bg-dracula-cyan focus:ring-dracula-purple"
+                >
+                    Manage Sections
+                </button>
+                <button
                     onClick={() => router.back()}
                     className="px-6 py-3 bg-dracula-green text-dracula-background rounded hover:bg-dracula-cyan focus:ring-dracula-purple"
                 >
