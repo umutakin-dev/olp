@@ -27,8 +27,6 @@ export async function GET(req: NextRequest) {
 
         // If `studentId` is provided, filter enrollments by `studentId`
 
-        console.log("STUDEN ID: ", studentId);
-
         if (studentId) {
             response = await databases.listDocuments(
                 APPWRITE_DATABASE_ID,
@@ -42,8 +40,6 @@ export async function GET(req: NextRequest) {
                 APPWRITE_ENROLLMENT_COLLECTION_ID
             );
         }
-
-        console.log("RESPONSE: ", response);
 
         // Fetch associated course details for each enrollment
         const enrollmentsWithCourses = await Promise.all(
